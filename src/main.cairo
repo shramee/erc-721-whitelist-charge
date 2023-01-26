@@ -27,3 +27,4 @@ from src.whitelist import (
     whitelist_addr_arr,
     whitelist_addresses,
     freemint_addresses)
+from src.royalties import royaltyInfo, setDefaultRoyalty, setTokenRoyalty

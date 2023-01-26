@@ -10,7 +10,6 @@ from openzeppelin.token.erc721.presets.ERC721MintableBurnable import (
     ownerOf,
     getApproved,
     isApprovedForAll,
-    tokenURI,
     owner,
     approve,
     setApprovalForAll,
@@ -27,4 +26,13 @@ from src.whitelist import (
     whitelist_addr_arr,
     whitelist_addresses,
     freemint_addresses)
+
+from src.token_uri import (
+    revealed,
+    baseURL,
+    LongURL,
+    tokenURI,
+    set_base_url
+)
+
 from src.royalties import royaltyInfo, setDefaultRoyalty, setTokenRoyalty

@@ -24,30 +24,25 @@ from openzeppelin.token.erc721.presets.ERC721MintableBurnable import (
 )
 
 @storage_var
-func balance() -> (res: felt) {
+func _whitelist( address: felt ) -> (res: felt) {
+}
+
+func whitelist_addr_arr{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    addr: felt*,
+    addr_left: felt,
+    list: felt
+) {
+    if ( addr_left == 0 ) {
+        return ();
+    }
+    _whitelist.write( addr[0], list );
+    return whitelist_addr_arr( addr + 1, addr_left - 1, list );
 }
 
 @external
-func increase_balance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    amount: felt
+func whitelist_addresses{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    address_len: felt,
+    address: felt*,
 ) {
-    with_attr error_message("Amount must be positive. Got: {amount}.") {
-        assert_nn(amount);
-    }
-
-    let (res) = balance.read();
-    balance.write(res + amount);
-    return ();
-}
-
-@view
-func get_balance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (res: felt) {
-    let (res) = balance.read();
-    return (res,);
-}
-
-@constructor
-func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    balance.write(0);
-    return ();
+    return whitelist_addr_arr( address, address_len, 'whitelist' );
 }

@@ -1,28 +1,22 @@
 %lang starknet
-from src.main import balance, increase_balance
+from src.main import whitelist_addresses, _whitelist
 from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.alloc import alloc
 
 @external
-func test_increase_balance{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
-    let (result_before) = balance.read();
-    assert result_before = 0;
+func test_whitelist{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
 
-    increase_balance(42);
+    let (addresses: felt*) = alloc();
 
-    let (result_after) = balance.read();
-    assert result_after = 42;
-    return ();
-}
+    assert addresses[0] = 0xf00;
+    assert addresses[1] = 0xb0b;
+    // assert addresses[0] = 0xace;
 
-@external
-func test_cannot_increase_balance_with_negative_value{
-    syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*
-}() {
-    let (result_before) = balance.read();
-    assert result_before = 0;
-
-    %{ expect_revert("TRANSACTION_FAILED", "Amount must be positive") %}
-    increase_balance(-42);
-
+    whitelist_addresses( 2, addresses );
+    let (foo_whitelisted) = _whitelist.read(0xf00);
+    assert foo_whitelisted = 'whitelist';
+    let (bob_whitelisted) = _whitelist.read(0xb0b);
+    assert bob_whitelisted = 'whitelist';
     return ();
 }

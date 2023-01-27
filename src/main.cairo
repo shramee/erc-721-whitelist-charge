@@ -20,6 +20,8 @@ from src.OpenZepplin_ERC721MintableBurnable import (
     renounceOwnership
 )
 
+from src.mint import mint, constructor
+
 from src.whitelist import (
     whitelist_addr_arr,
     whitelist_addresses,

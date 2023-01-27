@@ -1,8 +1,7 @@
 %lang starknet
 from starkware.cairo.common.math import assert_nn
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from openzeppelin.token.erc721.presets.ERC721MintableBurnable import (
-    constructor,
+from src.OpenZepplin_ERC721MintableBurnable import (
     supportsInterface,
     name,
     symbol,
@@ -15,7 +14,6 @@ from openzeppelin.token.erc721.presets.ERC721MintableBurnable import (
     setApprovalForAll,
     transferFrom,
     safeTransferFrom,
-    mint as _mint,
     burn,
     setTokenURI,
     transferOwnership,

@@ -28,7 +28,8 @@ from src.mint import mint, TokenMeta
 from src.whitelist import (
     whitelist_addr_arr,
     whitelist_addresses,
-    freemint_addresses)
+    freemint_addresses,
+    stage_switch)
 
 from src.token_uri import (
     revealed,

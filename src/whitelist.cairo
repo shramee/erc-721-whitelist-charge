@@ -4,12 +4,18 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.alloc import alloc
 from openzeppelin.access.ownable.library import Ownable
 
+
 @storage_var
 func _whitelist( address: felt ) -> (res: felt) {
 }
 
 @storage_var
 func _whitelist_meta( address: felt ) -> (res: felt) {
+}
+
+namespace Lists {
+    const WHITELIST = 'whitelist';
+    const FREEMINT = 'freemint';
 }
 
 func whitelist_addr_arr{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -30,7 +36,7 @@ func whitelist_addresses{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_c
     address: felt*,
 ) {
     Ownable.assert_only_owner();
-    return whitelist_addr_arr( address, address_len, 'whitelist' );
+    return whitelist_addr_arr( address, address_len, Lists.WHITELIST );
 }
 
 @external
@@ -39,7 +45,12 @@ func freemint_addresses{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_ch
     address: felt*,
 ) {
     Ownable.assert_only_owner();
-    return whitelist_addr_arr( address, address_len, 'freemint' );
+    return whitelist_addr_arr( address, address_len, Lists.FREEMINT );
+}
+
+@view
+func address_in_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}( addr: felt ) {
+    return _whitelist.get( addr );
 }
 
 @external
@@ -57,7 +68,7 @@ func can_mint{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     let (sale_stage) = _whitelist_meta.read('stage');
     let (listed) = _whitelist.read(addr);
     if ( sale_stage == 0 ) {
-        if ( listed == 'freemint' ) {
+        if ( listed == Lists.FREEMINT ) {
             // Stage 0 only freemint can mint
             return listed;
         }

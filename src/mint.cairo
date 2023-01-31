@@ -9,7 +9,7 @@ from starkware.cairo.common.uint256 import Uint256
 from openzeppelin.token.erc721.library import ERC721
 from openzeppelin.access.ownable.library import Ownable
 
-from src.whitelist import can_mint
+from src.whitelist import can_mint, Lists
 
 @storage_var
 func TokenMeta( meta: felt ) -> (data: felt) {
@@ -50,7 +50,7 @@ func mint{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(
         assert_not_equal( i_can_mint, 0 );
     }
 
-    if ( 'freemint' == i_can_mint ) {
+    if ( Lists.FREEMINT == i_can_mint ) {
         // Just mint, no questions asked.
         return _mint(to);
     }

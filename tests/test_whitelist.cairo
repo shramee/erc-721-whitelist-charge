@@ -3,8 +3,10 @@ from src.whitelist import (
     _whitelist_meta,
     _whitelist,
     whitelist_addresses,
+    freemint_addresses,
     stage_switch,
-    can_mint
+    can_mint,
+    Lists
 )
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import assert_not_equal
@@ -38,11 +40,40 @@ func test_whitelist{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuilt
     %{ stop_prank_callable = start_prank(0xad317) %}
     whitelist_addresses( 2, addresses );
     let (foo_whitelisted) = _whitelist.read(0xf00);
-    assert foo_whitelisted = 'whitelist';
+    assert foo_whitelisted = Lists.WHITELIST;
     let (bob_whitelisted) = _whitelist.read(0xb0b);
-    assert bob_whitelisted = 'whitelist';
+    assert bob_whitelisted = Lists.WHITELIST;
     %{ stop_prank_callable() %}
     return ();
+}
+
+@external
+func test_freemint{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() {
+    alloc_locals;
+
+    let addresses: felt* = get_arr( 0xf00, 0xb0b, 0);
+
+    %{ stop_prank_callable = start_prank(0xad317) %}
+    freemint_addresses( 2, addresses );
+    let (foo_whitelisted) = _whitelist.read(0xf00);
+    assert foo_whitelisted = Lists.FREEMINT;
+    let (bob_whitelisted) = _whitelist.read(0xb0b);
+    assert bob_whitelisted = Lists.FREEMINT;
+    %{ stop_prank_callable() %}
+    return ();
+}
+
+@external
+func test_address_in_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    %{ stop_prank_callable = start_prank(0xad317) %}
+    let addresses: felt* = get_arr( 0xf00, 0xb0b, 0);
+    freemint_addresses( 2, addresses );
+    %{ stop_prank_callable() %}
+
+    let (listed) = address_in_list( 0xf00 );
+    assert listed = Lists.FREEMINT;
+    let (listed) = address_in_list( 0xbae );
+    assert listed = 0; // Not listed
 }
 
 @external
@@ -75,8 +106,8 @@ func test_can_mint{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
     let freemi = 0x234ca;
     let whitly = 0x8d76d;
     let johndo = 0x3c23a;
-    _whitelist.write(freemi, 'freemint');
-    _whitelist.write(whitly, 'whitelist');
+    _whitelist.write(freemi, Lists.FREEMINT);
+    _whitelist.write(whitly, Lists.WHITELIST);
 
     _whitelist_meta.write('stage', 0);
     // Stage 0, freemint can mint, others can't

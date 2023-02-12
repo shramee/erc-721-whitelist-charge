@@ -8,6 +8,7 @@ from starkware.cairo.common.uint256 import Uint256
 
 from openzeppelin.token.erc721.library import ERC721
 from openzeppelin.access.ownable.library import Ownable
+from openzeppelin.token.erc20.IERC20 import IERC20
 
 from src.whitelist import can_mint, Lists
 
@@ -36,12 +37,6 @@ func _mint{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(to: 
     return ERC721._mint(to, Uint256(low=tkn_id, high=0));
 }
 
-@contract_interface
-namespace ERC20 {
-    func transfer(recipient: felt, amount: Uint256) -> (success: felt) {
-    }
-}
-
 @external
 func mint{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(
     to: felt, tokenId: Uint256
@@ -63,8 +58,8 @@ func mint{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(
     let mint_charge_256 = Uint256(low=mint_charge, high=0);
     let (owner) = Ownable.owner();
 
-    // @TODO Charge ETH for minting, import ERC20 interface and call contract
-    ERC20.transfer(contract_address=payment_token_addr, recipient=owner, amount=mint_charge_256);
+    // @TODO Charge ETH for minting, import IERC20 interface and call contract
+    IERC20.transfer(contract_address=payment_token_addr, recipient=owner, amount=mint_charge_256);
 
     return _mint(to);
 }

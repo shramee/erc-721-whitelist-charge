@@ -11,14 +11,17 @@ from openzeppelin.access.ownable.library import Ownable
 
 from src.whitelist import can_mint, Lists
 
+const TOKEN_LIMIT = 'token_limit';
+const NEXT_TOKEN_ID = 'next_token_id';
+
 @storage_var
 func TokenMeta( meta: felt ) -> (data: felt) {
 }
 
 // Return available token ID, increment storage
 func get_available_token_id{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}() -> felt {
-    let (token_limit) = TokenMeta.read('token_limit');
-    let (next_token_id) = TokenMeta.read('next_token_id');
+    let (token_limit) = TokenMeta.read( TOKEN_LIMIT );
+    let (next_token_id) = TokenMeta.read(NEXT_TOKEN_ID);
 
     // Only token IDs less than supply limit can be minted
     assert_nn( next_token_id ); // This is always gonna be fine, just here for sanity
@@ -29,7 +32,7 @@ func get_available_token_id{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, rang
 
 func _mint{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(to: felt) {
     let tkn_id = get_available_token_id();
-    TokenMeta.write('next_token_id', tkn_id + 1);
+    TokenMeta.write(NEXT_TOKEN_ID, tkn_id + 1);
     return ERC721._mint(to, Uint256(low=tkn_id, high=0));
 }
 

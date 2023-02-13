@@ -12,17 +12,26 @@ from openzeppelin.token.erc20.IERC20 import IERC20
 
 from src.whitelist import can_mint, Lists
 
-const TOKEN_LIMIT = 'token_limit';
-const NEXT_TOKEN_ID = 'next_token_id';
+@storage_var
+func MintCharge() -> (data: felt) {
+}
 
 @storage_var
-func TokenMeta( meta: felt ) -> (data: felt) {
+func PaymentTokenAddress() -> (data: felt) {
+}
+
+@storage_var
+func TokenLimit() -> (data: felt) {
+}
+
+@storage_var
+func NextTokenID() -> (data: felt) {
 }
 
 // Return available token ID, increment storage
 func get_available_token_id{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}() -> felt {
-    let (token_limit) = TokenMeta.read( TOKEN_LIMIT );
-    let (next_token_id) = TokenMeta.read(NEXT_TOKEN_ID);
+    let (token_limit) = TokenLimit.read();
+    let (next_token_id) = NextTokenID.read();
 
     // Only token IDs less than supply limit can be minted
     assert_nn( next_token_id ); // This is always gonna be fine, just here for sanity
@@ -33,7 +42,7 @@ func get_available_token_id{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, rang
 
 func _mint{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(to: felt) {
     let tkn_id = get_available_token_id();
-    TokenMeta.write(NEXT_TOKEN_ID, tkn_id + 1);
+    NextTokenID.write(tkn_id + 1);
     let (high, low) = split_felt(tkn_id);
     return ERC721._mint(to, Uint256(high=high, low=low));
 }
@@ -45,7 +54,7 @@ func mint{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(
     let (caller) = get_caller_address();
     let i_can_mint = can_mint( caller );
 
-    with_attr error_message( "Sorry, you cannot mint yet. Please try again later." ) {
+    with_attr error_message( "Caller not whitelisted. Please try again later." ) {
         assert_not_equal( i_can_mint, 0 );
     }
 
@@ -54,8 +63,8 @@ func mint{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(
         return _mint(to);
     }
 
-    let (payment_token_addr) = TokenMeta.read('payment_token_addr');
-    let (mint_charge) = TokenMeta.read('mint_charge');
+    let (payment_token_addr) = PaymentTokenAddress.read();
+    let (mint_charge) = MintCharge.read();
     let (high, low) = split_felt(mint_charge);
     let mint_charge_256 = Uint256(high=high, low=low);
     let (owner) = Ownable.owner();

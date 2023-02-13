@@ -23,13 +23,18 @@ from src.OpenZepplin_ERC721MintableBurnable import (
     renounceOwnership
 )
 
-from src.mint import mint, TokenMeta, TOKEN_LIMIT, NEXT_TOKEN_ID
+from src.mint import (
+    mint,
+    TokenLimit, NextTokenID,
+    MintCharge, PaymentTokenAddress
+)
 
 from src.whitelist import (
     whitelist_addr_arr,
     whitelist_addresses,
     freemint_addresses,
-    stage_switch)
+    stage_switch
+)
 
 from src.token_uri import (
     revealed,
@@ -50,9 +55,9 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     Ownable.initializer(owner);
 
     // token_limit and payment token addr addr
-    TokenMeta.write(TOKEN_LIMIT, token_limit);
-    TokenMeta.write('payment_token_addr', payment_token_addr);
-    TokenMeta.write('mint_charge', mint_charge);
-    TokenMeta.write(NEXT_TOKEN_ID, 0); // Unnecessary but establishes semantics
+    TokenLimit.write(token_limit);
+    PaymentTokenAddress.write(payment_token_addr);
+    MintCharge.write(mint_charge);
+    NextTokenID.write(0); // Unnecessary but establishes semantics
     return ();
 }

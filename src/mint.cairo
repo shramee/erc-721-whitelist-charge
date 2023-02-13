@@ -34,7 +34,8 @@ func get_available_token_id{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, rang
 func _mint{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(to: felt) {
     let tkn_id = get_available_token_id();
     TokenMeta.write(NEXT_TOKEN_ID, tkn_id + 1);
-    return ERC721._mint(to, Uint256(low=tkn_id, high=0));
+    let (high, low) = split_felt(tkn_id);
+    return ERC721._mint(to, Uint256(high=high, low=low));
 }
 
 @external
@@ -55,7 +56,8 @@ func mint{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(
 
     let (payment_token_addr) = TokenMeta.read('payment_token_addr');
     let (mint_charge) = TokenMeta.read('mint_charge');
-    let mint_charge_256 = Uint256(low=mint_charge, high=0);
+    let (high, low) = split_felt(mint_charge);
+    let mint_charge_256 = Uint256(high=high, low=low);
     let (owner) = Ownable.owner();
 
     // @TODO Charge ETH for minting, import IERC20 interface and call contract

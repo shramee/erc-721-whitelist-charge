@@ -6,11 +6,11 @@ from openzeppelin.access.ownable.library import Ownable
 
 
 @storage_var
-func _whitelist( address: felt ) -> (res: felt) {
+func WhitelistedAddresses( address: felt ) -> (list: felt) {
 }
 
 @storage_var
-func _whitelist_meta( address: felt ) -> (res: felt) {
+func WhitelistSaleStage() -> (res: felt) {
 }
 
 namespace Lists {
@@ -19,15 +19,15 @@ namespace Lists {
 }
 
 func whitelist_addr_arr{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    addr_len: felt,
     addr: felt*,
-    addr_left: felt,
     list: felt
 ) {
-    if ( addr_left == 0 ) {
+    if ( addr_len == 0 ) {
         return ();
     }
-    _whitelist.write( addr[0], list );
-    return whitelist_addr_arr( addr + 1, addr_left - 1, list );
+    WhitelistedAddresses.write( addr[0], list );
+    return whitelist_addr_arr( addr_len - 1, addr + 1, list );
 }
 
 @external
@@ -36,7 +36,7 @@ func whitelist_addresses{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_c
     address: felt*,
 ) {
     Ownable.assert_only_owner();
-    return whitelist_addr_arr( address, address_len, Lists.WHITELIST );
+    return whitelist_addr_arr( address_len, address, Lists.WHITELIST );
 }
 
 @external
@@ -45,18 +45,18 @@ func freemint_addresses{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_ch
     address: felt*,
 ) {
     Ownable.assert_only_owner();
-    return whitelist_addr_arr( address, address_len, Lists.FREEMINT );
+    return whitelist_addr_arr( address_len, address, Lists.FREEMINT );
 }
 
 @view
-func address_in_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}( addr: felt ) {
-    return _whitelist.get( addr );
+func address_in_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}( addr: felt ) -> (list: felt) {
+    return WhitelistedAddresses.read( addr );
 }
 
 @external
 func stage_switch{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    let (sale_stage) = _whitelist_meta.read('stage');
-    _whitelist_meta.write('stage', sale_stage + 1);
+    let (sale_stage) = WhitelistSaleStage.read();
+    WhitelistSaleStage.write(sale_stage + 1);
     return ();
 }
 
@@ -65,8 +65,8 @@ func stage_switch{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
 func can_mint{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     addr: felt
 ) -> felt {
-    let (sale_stage) = _whitelist_meta.read('stage');
-    let (listed) = _whitelist.read(addr);
+    let (sale_stage) = WhitelistSaleStage.read();
+    let (listed) = WhitelistedAddresses.read(addr);
     if ( sale_stage == 0 ) {
         if ( listed == Lists.FREEMINT ) {
             // Stage 0 only freemint can mint

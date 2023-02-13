@@ -1,9 +1,10 @@
 %lang starknet
 from src.whitelist import (
-    _whitelist_meta,
-    _whitelist,
+    WhitelistSaleStage,
+    WhitelistedAddresses,
     whitelist_addresses,
     freemint_addresses,
+    address_in_list,
     stage_switch,
     can_mint,
     Lists
@@ -39,9 +40,9 @@ func test_whitelist{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuilt
 
     %{ stop_prank_callable = start_prank(0xad317) %}
     whitelist_addresses( 2, addresses );
-    let (foo_whitelisted) = _whitelist.read(0xf00);
+    let (foo_whitelisted) = WhitelistedAddresses.read(0xf00);
     assert foo_whitelisted = Lists.WHITELIST;
-    let (bob_whitelisted) = _whitelist.read(0xb0b);
+    let (bob_whitelisted) = WhitelistedAddresses.read(0xb0b);
     assert bob_whitelisted = Lists.WHITELIST;
     %{ stop_prank_callable() %}
     return ();
@@ -55,9 +56,9 @@ func test_freemint{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuilti
 
     %{ stop_prank_callable = start_prank(0xad317) %}
     freemint_addresses( 2, addresses );
-    let (foo_whitelisted) = _whitelist.read(0xf00);
+    let (foo_whitelisted) = WhitelistedAddresses.read(0xf00);
     assert foo_whitelisted = Lists.FREEMINT;
-    let (bob_whitelisted) = _whitelist.read(0xb0b);
+    let (bob_whitelisted) = WhitelistedAddresses.read(0xb0b);
     assert bob_whitelisted = Lists.FREEMINT;
     %{ stop_prank_callable() %}
     return ();
@@ -74,16 +75,17 @@ func test_address_in_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_
     assert listed = Lists.FREEMINT;
     let (listed) = address_in_list( 0xbae );
     assert listed = 0; // Not listed
+    return ();
 }
 
 @external
 func test_sale_stage{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    let (sale_stage) = _whitelist_meta.read('stage');
+    let (sale_stage) = WhitelistSaleStage.read();
     assert 0 = sale_stage;
 
     stage_switch();
 
-    let (sale_stage) = _whitelist_meta.read('stage');
+    let (sale_stage) = WhitelistSaleStage.read();
     assert 1 = sale_stage;
 
     return ();
@@ -106,22 +108,22 @@ func test_can_mint{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
     let freemi = 0x234ca;
     let whitly = 0x8d76d;
     let johndo = 0x3c23a;
-    _whitelist.write(freemi, Lists.FREEMINT);
-    _whitelist.write(whitly, Lists.WHITELIST);
+    WhitelistedAddresses.write(freemi, Lists.FREEMINT);
+    WhitelistedAddresses.write(whitly, Lists.WHITELIST);
 
-    _whitelist_meta.write('stage', 0);
+    WhitelistSaleStage.write(0);
     // Stage 0, freemint can mint, others can't
     assert_can_mint_ne( freemi, 0 ); // freemi can mint, not equals 0
     assert_can_mint( whitly, 0 ); // whitly can't mint, equals 0
     assert_can_mint( johndo, 0 ); // johndo can't mint, equals 0
 
-    _whitelist_meta.write('stage', 1);
+    WhitelistSaleStage.write(1);
     // Stage 1, freemint and whitelisted can mint, others can't
     assert_can_mint_ne( freemi, 0 ); // freemi can mint, not equals 0
     assert_can_mint_ne( whitly, 0 ); // whitly can mint, not equals 0
     assert_can_mint( johndo, 0 ); // johndo can't mint, equals 0
 
-    _whitelist_meta.write('stage', 2);
+    WhitelistSaleStage.write(2);
     // Stage 2, everyone can mint
     assert_can_mint_ne( freemi, 0 ); // freemi can mint, not equals 0
     assert_can_mint_ne( whitly, 0 ); // whitly can mint, not equals 0

@@ -10,7 +10,7 @@ from openzeppelin.token.erc721.library import ERC721
 from openzeppelin.access.ownable.library import Ownable
 from openzeppelin.token.erc20.IERC20 import IERC20
 
-from src.whitelist import can_mint, Lists
+from src.whitelist import can_mint, Lists, WhitelistedAddresses
 
 @storage_var
 func MintCharge() -> (data: felt) {
@@ -44,6 +44,7 @@ func _mint{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(to: 
     let tkn_id = get_available_token_id();
     NextTokenID.write(tkn_id + 1);
     let (high, low) = split_felt(tkn_id);
+    WhitelistedAddresses.write( to, 0 );
     return ERC721._mint(to, Uint256(low=low, high=high));
 }
 

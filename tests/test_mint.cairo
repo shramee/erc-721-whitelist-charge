@@ -91,3 +91,17 @@ func test_minting{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
 
     return ();
 }
+
+@external
+func test_double_minting{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    WhitelistedAddresses.write(0xf008, Lists.FREEMINT);
+    WhitelistSaleStage.write(1);
+
+    // Should work the first time
+    _test_mint(0xf008);
+
+    // Should fail after first mint
+    %{ expect_revert(); %}
+    _test_mint(0xf008);
+    return ();
+}

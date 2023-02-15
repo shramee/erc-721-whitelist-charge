@@ -3,7 +3,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.starknet.common.syscalls import get_caller_address
 
-from starkware.cairo.common.math import assert_nn, assert_not_equal, split_felt
+from starkware.cairo.common.math import assert_nn, assert_not_equal
 from starkware.cairo.common.uint256 import Uint256
 
 from openzeppelin.token.erc721.library import ERC721
@@ -11,6 +11,7 @@ from openzeppelin.access.ownable.library import Ownable
 from openzeppelin.token.erc20.IERC20 import IERC20
 
 from src.whitelist import can_mint, Lists, WhitelistedAddresses
+from src.utils import felt_to_uint256
 
 @storage_var
 func MintCharge() -> (data: felt) {
@@ -43,9 +44,8 @@ func get_available_token_id{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, rang
 func _mint{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(to: felt) {
     let tkn_id = get_available_token_id();
     NextTokenID.write(tkn_id + 1);
-    let (high, low) = split_felt(tkn_id);
     WhitelistedAddresses.write( to, 0 );
-    return ERC721._mint(to, Uint256(low=low, high=high));
+    return ERC721._mint(to, felt_to_uint256(tkn_id));
 }
 
 // tokenId is ignored
@@ -67,8 +67,7 @@ func mint{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(
 
     let (payment_token_addr) = PaymentTokenAddress.read();
     let (mint_charge) = MintCharge.read();
-    let (high, low) = split_felt(mint_charge);
-    let mint_charge_256 = Uint256(low=low, high=high);
+    let mint_charge_256 = felt_to_uint256(mint_charge);
     let (owner) = Ownable.owner();
 
     IERC20.transfer(contract_address=payment_token_addr, recipient=owner, amount=mint_charge_256);

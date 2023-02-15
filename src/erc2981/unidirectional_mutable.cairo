@@ -26,6 +26,7 @@ from openzeppelin.security.safemath.library import SafeUint256
 const IERC2981_ID = 0x2a55205a;
 
 const FEE_DENOMINATOR = 10000;
+from src.utils import felt_to_uint256
 
 // The royalty percentage is expressed in basis points
 // i.e. fee_basis_points of 123 = 1.23%, 10000 = 100%
@@ -78,8 +79,10 @@ namespace ERC2981_UniDirectional_Mutable {
         tempvar pedersen_ptr = pedersen_ptr;
         // sale_price is checked by SafeUint256 operations
         // royalty_amount = sale_price * fee_basis_points / 10000
-        let (x: Uint256) = SafeUint256.mul(sale_price, felt_to_uint256(royalty.fee_basis_points));
-        let (royalty_amount: Uint256, _) = SafeUint256.div_rem(x, felt_to_uint256(FEE_DENOMINATOR));
+        let basis256 = felt_to_uint256(royalty.fee_basis_points);
+        let (x: Uint256) = SafeUint256.mul(sale_price, basis256);
+        let denominator256 = felt_to_uint256(FEE_DENOMINATOR);
+        let (royalty_amount: Uint256, _) = SafeUint256.div_rem(x, denominator256);
 
         return (royalty.receiver, royalty_amount);
     }

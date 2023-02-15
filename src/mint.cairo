@@ -45,7 +45,8 @@ func _mint{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr}(to: 
     let tkn_id = get_available_token_id();
     NextTokenID.write(tkn_id + 1);
     WhitelistedAddresses.write( to, 0 );
-    return ERC721._mint(to, felt_to_uint256(tkn_id));
+    let tkn_256 = felt_to_uint256(tkn_id);
+    return ERC721._mint(to, tkn_256);
 }
 
 // tokenId is ignored

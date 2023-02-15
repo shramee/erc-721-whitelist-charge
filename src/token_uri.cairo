@@ -16,7 +16,6 @@ from starkware.cairo.common.math import (
     assert_lt_felt,
     unsigned_div_rem,
 )
-from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.math_cmp import is_le_felt
 
 from openzeppelin.token.erc721.library import ERC721_owners

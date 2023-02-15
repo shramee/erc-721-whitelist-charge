@@ -36,13 +36,7 @@ from src.whitelist import (
     stage_switch
 )
 
-from src.token_uri import (
-    revealed,
-    baseURL,
-    LongURL,
-    tokenURI,
-    set_base_url
-)
+from src.token_uri import tokenURI, set_base_url
 
 from src.royalties import royaltyInfo, setDefaultRoyalty, setTokenRoyalty
 

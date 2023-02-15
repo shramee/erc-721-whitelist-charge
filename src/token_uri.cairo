@@ -18,12 +18,13 @@ from starkware.cairo.common.math import (
 )
 from starkware.cairo.common.math_cmp import is_le_felt
 from src.utils import felt_to_str
+from openzeppelin.access.ownable.library import Ownable
 
 from openzeppelin.token.erc721.library import ERC721_owners
 
 // TRUE or FALSE
 @storage_var
-func revealed() -> (res: felt) {
+func Revealed() -> (res: felt) {
 }
 
 struct LongURL {
@@ -33,7 +34,7 @@ struct LongURL {
 }
 
 @storage_var
-func baseURL() -> (res: LongURL) {
+func BaseURL() -> (res: LongURL) {
 }
 
 @view
@@ -42,7 +43,7 @@ func tokenURI{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 ) -> (res_len: felt, res: felt*) {
     alloc_locals;
     let url_core = _create_url_core();
-    let (_revealed) = revealed.read();
+    let (_revealed) = Revealed.read();
 
     let (exists) = ERC721_owners.read(tokenId);
     with_attr error_message("The token doesn't exist.") {
@@ -61,7 +62,7 @@ func tokenURI{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 func _create_url_core{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> felt* {
     alloc_locals;
     let (url_core: felt*) = alloc();
-    let (url) = baseURL.read();
+    let (url) = BaseURL.read();
     assert url_core[0] = url.x;
     assert url_core[1] = url.y;
     assert url_core[2] = url.z;
@@ -82,14 +83,15 @@ func _create_url_end{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 func set_base_url{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     long_url: LongURL
 ) {
-    let (_revealed) = revealed.read();
+    let (_revealed) = Revealed.read();
     with_attr error_message(
         "Cannot set base URL again after it has been added for reveal") {
             assert _revealed = FALSE;
         }
+    Ownable.assert_only_owner();
 
-    baseURL.write(long_url);
-    revealed.write(TRUE);
+    BaseURL.write(long_url);
+    Revealed.write(TRUE);
     return();
 
 }

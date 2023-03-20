@@ -1,7 +1,13 @@
 [project]
 protostar-version = "0.9.1"
 lib-path = "lib"
-cairo-path = ["lib/cairo_contracts/src"]
+cairo-path = [
+	"lib/cairo_contracts/src",
+	"lib/imx_starknet"
+]
+
+[test]
+target = ["tests"]
 
 [contracts]
 main = ["src/main.cairo"]

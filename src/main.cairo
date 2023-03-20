@@ -38,15 +38,19 @@ from src.whitelist import (
 
 from src.token_uri import tokenURI, set_base_url
 
-from src.royalties import royaltyInfo, setDefaultRoyalty, setTokenRoyalty
+from src.royalties import royaltyInfo, royalty_initializer
 
 
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    name: felt, symbol: felt, owner: felt, token_limit: felt, mint_charge: felt, payment_token_addr: felt
+    name: felt, symbol: felt,
+    owner: felt, token_limit: felt,
+    mint_charge: felt, payment_token_addr: felt,
+    royalty_hundredth_percents: felt
 ) {
     ERC721.initializer(name, symbol);
     Ownable.initializer(owner);
+    royalty_initializer(owner, royalty_hundredth_percents)
 
     // token_limit and payment token addr addr
     TokenLimit.write(token_limit);

@@ -50,7 +50,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 ) {
     ERC721.initializer(name, symbol);
     Ownable.initializer(owner);
-    royalty_initializer(owner, royalty_hundredth_percents)
+    royalty_initializer(owner, royalty_hundredth_percents);
 
     // token_limit and payment token addr addr
     TokenLimit.write(token_limit);
